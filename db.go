@@ -4,7 +4,6 @@ import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	log "github.com/sirupsen/logrus"
-	"gitlab.com/Dumbeldor/gorest/entity"
 )
 
 // DB wrapper object
@@ -84,8 +83,8 @@ func (db *DB) CreateFakeData() {
 	*/
 }
 
-func (db *DB) CreateSchema() error {
-	err := db.NativeDB.AutoMigrate(&entity.User{}).Error
+func (db *DB) CreateSchema(entity *interface{}) error {
+	err := db.NativeDB.AutoMigrate(entity).Error
 	if err != nil {
 		db.log.Errorln("Error to create schema: %s", err)
 		return err
