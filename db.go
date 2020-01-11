@@ -83,11 +83,13 @@ func (db *DB) CreateFakeData() {
 	*/
 }
 
-func (db *DB) CreateSchema(entity *interface{}) error {
-	err := db.NativeDB.AutoMigrate(entity).Error
-	if err != nil {
-		db.log.Errorln("Error to create schema: %s", err)
-		return err
+func (db *DB) CreateSchema(entities ...interface{}) error {
+	for _, entity := range entities {
+		err := db.NativeDB.AutoMigrate(entity).Error
+		if err != nil {
+			db.log.Errorln("Error to create schema: %s", err)
+			return err
+		}
 	}
 
 	db.log.Infoln("Created schema")
