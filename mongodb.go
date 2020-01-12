@@ -12,7 +12,7 @@ import (
 
 type MongoDB struct {
 	database *mongo.Database
-	log *log.Entry
+	log      *log.Entry
 }
 
 var g_MongoDB *MongoDB
