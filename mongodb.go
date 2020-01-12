@@ -17,11 +17,11 @@ type MongoDB struct {
 
 var g_MongoDB *MongoDB
 
-func getClient() *MongoDB {
+func GetMongoDB() *MongoDB {
 	return g_MongoDB
 }
 
-func newClient() *MongoDB {
+func NewMongoDB() *MongoDB {
 	g_MongoDB = &MongoDB{
 		database: nil,
 		log: log.WithFields(log.Fields{
