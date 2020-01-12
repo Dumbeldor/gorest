@@ -41,12 +41,13 @@ func (mongoDB *MongoDB) init() bool {
 	var err error
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
 
-	mongoDBUrl := Get("mongodb.url").(string)
-	if mongoDBUrl == "" {
+	mongoDBUrl := Get("mongodb.url")
+	if mongoDBUrl == nil {
 		mongoDBUrl = "mongodb://localhost:27017"
-		mongoDB.log.Infoln("No configuration for mongodb's url found, use the default one: %s", mongoDBUrl)
+		mongoDB.log.Infof("No configuration for mongodb's url found, use the default one: %s", mongoDBUrl)
 	}
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(mongoDBUrl))
+	mongoDB.log.Infof("Connecting to %s", mongoDBUrl)
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(mongoDBUrl.(string)))
 	if err != nil {
 		mongoDB.log.Fatalln("Error to init mongodb. Error: %s", err)
 		return false
@@ -55,17 +56,17 @@ func (mongoDB *MongoDB) init() bool {
 	ctx, _ = context.WithTimeout(context.Background(), 2*time.Second)
 	err = client.Ping(ctx, readpref.Primary())
 	if err != nil {
-		mongoDB.log.Fatalln("Error to ping mongodb. Error: %s", err)
+		mongoDB.log.Fatalf("Error to ping mongodb. Error: %s", err)
 		return false
 	}
 
 	mongoDB.log.Infoln("Mongodb is init!")
-	databaseName := Get("mongodb.database").(string)
-	if databaseName == "" {
+	databaseName := Get("mongodb.database")
+	if databaseName == nil {
 		databaseName = "gorest"
 		mongoDB.log.Infoln("No configuration for mongodb database found, use the default one: %s", databaseName)
 	}
-	g_MongoDB.database = client.Database(databaseName)
+	g_MongoDB.database = client.Database(databaseName.(string))
 	mongoDB.log.Infoln("Mongodb is connected to gorest database")
 	return true
 }
@@ -160,16 +161,15 @@ func (mongoDB *MongoDB) Find(ctx context.Context, collectionName string, filter 
 	return res, nil
 }
 
-func (mongoDB *MongoDB) FindOne(ctx context.Context, collectionName string, filter bson.M) (interface{}, error) {
+func (mongoDB *MongoDB) FindOne(ctx context.Context, collectionName string, filter bson.M, res interface{}) error {
 	collection := mongoDB.database.Collection(collectionName)
-	var result interface{}
-	err := collection.FindOne(ctx, filter).Decode(&result)
+	err := collection.FindOne(ctx, filter).Decode(res)
 	if err != nil {
 		mongoDB.log.Errorln("Error to find one in %s collection for %s filter. Error: %s", collectionName, filter, err)
-		return nil, err
+		return  err
 	}
 
-	return result, nil
+	return nil
 }
 
 func (mongoDB *MongoDB) DeleteOne(ctx context.Context, collectionName string, filter bson.M) (int64, error) {
